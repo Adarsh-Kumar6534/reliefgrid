@@ -18,10 +18,21 @@ resource "aws_internet_gateway" "gw" {
   }
 }
 
-# Public subnet hosting the K3s single-node EC2 instance
+# Dynamically query available Availability Zones that support the configured EC2 instance type
+data "aws_ec2_instance_type_offerings" "compatible_az" {
+  filter {
+    name   = "instance-type"
+    values = [var.instance_type]
+  }
+
+  location_type = "availability-zone"
+}
+
+# Public subnet hosting the K3s single-node EC2 instance in a compatible AZ
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.subnet_cidr
+  availability_zone       = sort(data.aws_ec2_instance_type_offerings.compatible_az.locations)[0]
   map_public_ip_on_launch = true
 
   tags = {

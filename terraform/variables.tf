@@ -4,7 +4,7 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-# Configurable instance type allowing student developers to select Free Tier eligible or credit-backed instances.
+# Configurable instance type for K3s single-node cluster (t3.small for Free Tier eligibility)
 variable "instance_type" {
   description = "EC2 instance type for the K3s single-node cluster."
   type        = string
@@ -16,15 +16,14 @@ variable "key_pair_name" {
   type        = string
 }
 
-# Restrict SSH access to administrator's public IP range to prevent unauthorized access.
+# Restrict SSH and K8s API access strictly to administrator's public IP range to prevent unauthorized access.
 variable "admin_cidr" {
-  description = "CIDR block allowed for SSH administrative access (e.g. '203.0.113.25/32')."
+  description = "Required IPv4 CIDR block allowed for administrative SSH and K8s API access (e.g. '203.0.113.25/32')."
   type        = string
-  default     = "0.0.0.0/0"
 
   validation {
     condition     = can(cidrnetmask(var.admin_cidr))
-    error_message = "admin_cidr must be a valid IPv4 CIDR block (e.g., '1.2.3.4/32' or '0.0.0.0/0')."
+    error_message = "admin_cidr must be a valid IPv4 CIDR block (e.g., '203.0.113.25/32')."
   }
 }
 
