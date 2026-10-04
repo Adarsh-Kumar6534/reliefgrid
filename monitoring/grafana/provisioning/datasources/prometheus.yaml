@@ -1,0 +1,10 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    # Connect directly to internal K8s Prometheus Service via ClusterIP DNS
+    url: http://prometheus-service.reliefgrid.svc.cluster.local:9090
+    isDefault: true
+    editable: false

@@ -1,0 +1,30 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: reliefgrid
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  # Minimum replicas running under normal load
+  minReplicas: 2
+  # Maximum replicas allowed during high-traffic crisis scenarios
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          # Target 60% CPU utilization calculated against the pod's 100m CPU request
+          averageUtilization: 60
+  # Controlled scale-down stabilization window to prevent rapid oscillation
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 15

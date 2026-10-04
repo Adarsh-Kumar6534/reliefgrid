@@ -1,0 +1,140 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-reliefgrid
+  namespace: reliefgrid
+data:
+  reliefgrid-dashboard.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "graphTooltip": 1,
+      "id": null,
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "id": 100,
+          "title": "SECTION A: SYSTEM OVERVIEW & INFRASTRUCTURE HEALTH",
+          "type": "row"
+        },
+        {
+          "title": "Platform Operational Status",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+          "id": 1,
+          "targets": [
+            {
+              "expr": "sum(kube_deployment_status_replicas_available{namespace=\"reliefgrid\", deployment=\"backend\"}) >= 1",
+              "legendFormat": "Status"
+            }
+          ]
+        },
+        {
+          "title": "Backend Replica Count (Active)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+          "id": 2,
+          "targets": [
+            {
+              "expr": "kube_deployment_status_replicas{namespace=\"reliefgrid\", deployment=\"backend\"}",
+              "legendFormat": "Active Replicas"
+            }
+          ]
+        },
+        {
+          "title": "Frontend Replica Count",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+          "id": 3,
+          "targets": [
+            {
+              "expr": "kube_deployment_status_replicas{namespace=\"reliefgrid\", deployment=\"frontend\"}",
+              "legendFormat": "Frontend Replicas"
+            }
+          ]
+        },
+        {
+          "title": "Pod Restarts (30m)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+          "id": 4,
+          "targets": [
+            {
+              "expr": "sum(changes(kube_pod_container_status_restarts_total{namespace=\"reliefgrid\"}[30m]))",
+              "legendFormat": "Restarts"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+          "id": 101,
+          "title": "SECTION B: APPLICATION TRAFFIC & LATENCY METRICS",
+          "type": "row"
+        },
+        {
+          "title": "HTTP Request Rate (Req/sec)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+          "id": 5,
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{namespace=\"reliefgrid\"}[1m]))",
+              "legendFormat": "Total Req/sec"
+            }
+          ]
+        },
+        {
+          "title": "Response Latency p95 (Seconds)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+          "id": 6,
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{namespace=\"reliefgrid\"}[1m])) by (le))",
+              "legendFormat": "p95 Latency"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+          "id": 102,
+          "title": "SECTION C: AUTO-SCALING & HPA OBSERVABILITY",
+          "type": "row"
+        },
+        {
+          "title": "HPA Replicas (Current vs Desired)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+          "id": 7,
+          "targets": [
+            {
+              "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=\"reliefgrid\", horizontalpodautoscaler=\"backend-hpa\"}",
+              "legendFormat": "Current Replicas"
+            },
+            {
+              "expr": "kube_horizontalpodautoscaler_status_desired_replicas{namespace=\"reliefgrid\", horizontalpodautoscaler=\"backend-hpa\"}",
+              "legendFormat": "Desired Replicas"
+            }
+          ]
+        },
+        {
+          "title": "Backend Avg CPU Utilization (%)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+          "id": 8,
+          "targets": [
+            {
+              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"reliefgrid\", pod=~\"backend.*\"}[1m])) / sum(kube_pod_container_resource_requests{namespace=\"reliefgrid\", resource=\"cpu\", pod=~\"backend.*\"}) * 100",
+              "legendFormat": "CPU %"
+            }
+          ]
+        }
+      ],
+      "refresh": "5s",
+      "schemaVersion": 39,
+      "tags": ["reliefgrid", "devops"],
+      "title": "ReliefGrid — Disaster Operations & Platform Health"
+    }
