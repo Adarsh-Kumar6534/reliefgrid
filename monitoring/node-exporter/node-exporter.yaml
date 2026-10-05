@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-exporter
+  namespace: reliefgrid
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-exporter
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+    spec:
+      containers:
+        - name: node-exporter
+          image: prom/node-exporter:v1.7.0
+          ports:
+            - containerPort: 9100
+          resources:
+            requests:
+              cpu: 15m
+              memory: 20Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-exporter
+  namespace: reliefgrid
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9100
+      targetPort: 9100
+  selector:
+    app: node-exporter

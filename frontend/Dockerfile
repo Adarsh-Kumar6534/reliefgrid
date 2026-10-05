@@ -13,8 +13,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Set build-time env var to fallback to local backend if not specified
-ARG NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+# Set build-time env var to fallback to relative /api/v1 route
+ARG NEXT_PUBLIC_API_URL=/api/v1
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 RUN npm run build

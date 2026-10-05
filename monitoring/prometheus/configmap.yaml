@@ -6,7 +6,6 @@ metadata:
 data:
   prometheus.yml: |
     global:
-      # Keep scrape interval at 15s to capture HPA auto-scaling trends without excessive overhead
       scrape_interval: 15s
       evaluation_interval: 15s
 
@@ -17,7 +16,6 @@ data:
           - targets: ['localhost:9090']
 
       # 2. Dynamic ReliefGrid Backend Replica Scraping
-      # Dynamically discovers all running backend pods in 'reliefgrid' namespace on port 8000
       - job_name: 'reliefgrid-backend'
         kubernetes_sd_configs:
           - role: pod
@@ -40,11 +38,37 @@ data:
             regex: ([^:]+)(?::\d+)?;(\d+)
             replacement: $1:$2
             target_label: __address__
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
           - source_labels: [__meta_kubernetes_pod_name]
             action: replace
-            target_label: pod_name
+            target_label: pod
 
-      # 3. Kube-State-Metrics Scraping for Deployment and HPA Replica States
+      # 3. Kube-State-Metrics Scraping
       - job_name: 'kube-state-metrics'
         static_configs:
           - targets: ['kube-state-metrics.reliefgrid.svc.cluster.local:8080']
+
+      # 4. Kubelet cAdvisor Container Metrics via Kubernetes API Proxy (Strict ServiceAccount TLS)
+      - job_name: 'kubelet-cadvisor'
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
+
+      # 5. Node Exporter Host Metrics
+      - job_name: 'node-exporter'
+        static_configs:
+          - targets: ['node-exporter.reliefgrid.svc.cluster.local:9100']
