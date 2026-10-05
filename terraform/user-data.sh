@@ -12,11 +12,22 @@ echo "=================================================="
 apt-get update -y
 apt-get install -y --no-install-recommends curl ca-certificates open-iscsi nfs-common
 
+# Retrieve public IP address for TLS SAN certificate registration
+IMDS_TOKEN=$(curl -s -f -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" || true)
+if [ -n "$IMDS_TOKEN" ]; then
+  PUBLIC_IP=$(curl -s -f -H "X-aws-ec2-metadata-token: $IMDS_TOKEN" http://169.254.169.254/latest/meta-data/public-ipv4 || true)
+else
+  PUBLIC_IP=$(curl -s -f http://169.254.169.254/latest/meta-data/public-ipv4 || true)
+fi
+
+INSTALL_ARGS="--write-kubeconfig-mode 644 --disable servicelb"
+if [ -n "$PUBLIC_IP" ]; then
+  INSTALL_ARGS="$INSTALL_ARGS --tls-san $PUBLIC_IP"
+fi
+
 # Install K3s single-node Kubernetes control plane
 echo "Installing K3s version: ${k3s_version}..."
-curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="${k3s_version}" sh -s - \
-  --write-kubeconfig-mode 644 \
-  --disable servicelb
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="${k3s_version}" sh -s - $INSTALL_ARGS
 
 # Configure system-wide environment variables for kubectl access
 cat <<'EOF' > /etc/profile.d/k3s.sh
