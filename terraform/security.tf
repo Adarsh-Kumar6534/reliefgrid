@@ -31,6 +31,15 @@ resource "aws_security_group" "k3s_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Inbound Traefik NodePort access for K3s public application traffic
+  ingress {
+    description = "Traefik NodePort public application access"
+    from_port   = 31330
+    to_port     = 31330
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # Optional Kubernetes API access restricted to admin CIDR
   ingress {
     description = "Kubernetes API server access"

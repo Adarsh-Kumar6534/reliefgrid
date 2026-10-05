@@ -13,9 +13,11 @@ spec:
       labels:
         app: frontend
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: frontend
-          image: reliefgrid-frontend:latest
+          image: ghcr.io/adarsh-kumar6534/reliefgrid-frontend:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000

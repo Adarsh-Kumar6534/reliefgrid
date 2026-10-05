@@ -60,11 +60,11 @@ variable "k3s_version" {
 variable "frontend_image" {
   description = "Container image URI for ReliefGrid frontend."
   type        = string
-  default     = "ghcr.io/reliefgrid/frontend:v1"
+  default     = "ghcr.io/adarsh-kumar6534/reliefgrid-frontend:v1"
 }
 
 variable "backend_image" {
   description = "Container image URI for ReliefGrid backend."
   type        = string
-  default     = "ghcr.io/reliefgrid/backend:v1"
+  default     = "ghcr.io/adarsh-kumar6534/reliefgrid-backend:v1"
 }

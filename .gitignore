@@ -34,4 +34,6 @@ crash.*.log
 !terraform.tfvars.example
 *.pem
 *.key
+*.tfplan
+tfplan
 

@@ -3,11 +3,8 @@ kind: Ingress
 metadata:
   name: reliefgrid-ingress
   namespace: reliefgrid
-  annotations:
-    # NGINX ingress controller path rewriting configuration
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   rules:
     - http:
         paths:

@@ -18,9 +18,11 @@ spec:
         prometheus.io/path: "/metrics"
         prometheus.io/port: "8000"
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: backend
-          image: reliefgrid-backend:latest
+          image: ghcr.io/adarsh-kumar6534/reliefgrid-backend:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
